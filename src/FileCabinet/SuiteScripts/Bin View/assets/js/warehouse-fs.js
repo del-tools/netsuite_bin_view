@@ -9,8 +9,8 @@ function getdata() {
 
 
 	jsondata.forEach(function(bin) {
-		// ////console.log(bin["Bin-Items"].replaceAll("/",","))
-		var items = JSON.parse(bin["Bin-Items"].replaceAll("/",","))
+		// console.log(bin["Bin-Items"].replaceAll("/",",").replace(/""/g, '"').replace(/^"(.*)"$/, '$1'))
+		var items = JSON.parse(bin["Bin-Items"].replaceAll("/",",").replaceAll(/""/g, '"').replace(/^"(.*)"$/, '$1'))
 		var isnewbin = true;
 		var newBinsArray = [];
 		var i = 0;
@@ -26,6 +26,8 @@ function getdata() {
 					"bin-width": bin["bin-width"],
 					"bin-height": bin["bin-height"],
 					"bin-pallets": bin["bin-pallets"],
+					"req_BinType": shortreqbins(bin["req_BinType"]).name,
+					"req_BinLevel": bin["req_BinLevel"],
 					"Bin-Items":items
 				}
 				outarray[i].bins.push(newBin);
@@ -46,6 +48,8 @@ function getdata() {
 					"bin-width": bin["bin-width"],
 					"bin-height": bin["bin-height"],
 					"bin-pallets": bin["bin-pallets"],
+					"req_BinType": shortreqbins(bin["req_BinType"]).name,
+					"req_BinLevel": bin["req_BinLevel"],
 					"Bin-Items":items
 				}]
 			});
@@ -174,6 +178,89 @@ function shortbins(bintype) {
 	}
 }
 
+function shortreqbins(req_BinType) {
+	switch (req_BinType) {
+		case 'Pallet - Oversize':
+			return{
+				name:'P-OS',
+
+			}
+			break;
+		case 'Pallet - Half Height':
+			return{
+				name:'P-HH',
+
+			}
+			break;
+		case 'Bulk - Half Height':
+			return{
+				name:'B-HH',
+
+			}
+			break;
+		case 'Bulk - Full Height':
+			return{
+				name:'B-FH',
+
+			}
+			break;
+		case 'Bulk - Tiny Height':
+			return{
+				name:'B-TH',
+
+			}
+			break;
+		case 'Pallet - Full Height':
+			return{
+				name:'P-FH',
+
+			}
+			break;
+		case 'Goods Out Zone':
+			return{
+				name:'GO',
+
+			}
+			break;
+		case 'Shelf - Racking':
+			return{
+				name:'S-R',
+
+			}
+			break;
+		case 'Shelf - Low Bay':
+			return{
+				name:'S-L',
+
+			}
+			break;
+		case 'Goods In Zone':
+			return{
+				name:'GI',
+
+			}
+			break;
+		case 'Trolley':
+			return{
+				name:'TR',
+
+			}
+			break;
+		case 'Unknown':
+			return{
+				name:'UN',
+
+			}
+			break;
+		default:
+			return{
+				name:'UN',
+
+			}
+	}
+}
+
+
 function csvJSON(csv) {
 
 	var lines = csv.split("\n");
@@ -204,7 +291,7 @@ function csvJSON(csv) {
 
 var jsonData = getdata();
 
-
+console.log(jsonData)
 
 
 onload = function(currentfilters) {
@@ -419,6 +506,9 @@ onload = function(currentfilters) {
 
 				if(tempitem_utl == 0){
 					binTypeShort.classList.add("flag_itm_vol","FLAG", "col-red");
+				}
+				if(ailseData["BinTypeShort"] !== ailseData["req_BinType"]){
+					binTypeShort.classList.add("flag_bin_type","FLAG", "col-red");
 				}
 				if(ailseData["palletbin"]){
 					ailseData["Bin-Items"][z].itemutl = (palletPercent*100).toFixed(0)
@@ -938,6 +1028,9 @@ var current_view = 0;
 				break;
 			case "flag_bin_vol":
 				currentfilters.main.not.push(".flag_bin_vol");
+				break;
+			case "flag_bin_type":
+				currentfilters.main.not.push(".flag_bin_type");
 				break;
 		}
 		switch (filter_utl_text) {

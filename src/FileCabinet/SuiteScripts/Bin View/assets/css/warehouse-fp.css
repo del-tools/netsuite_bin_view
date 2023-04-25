@@ -472,6 +472,10 @@ p{
 .col-red{
   background-color: rgb(253, 133, 133) !important;
 }
+.col-yellow{
+  background-color: rgb(224, 198, 140) !important;
+}
+
 
 #dialog-content th{
   padding: 10px;
@@ -562,6 +566,9 @@ p{
   background-color: rgba(255, 35, 35, 0.65) !important;
 }
 
+/*.red-yellow.col-red{*/
+/*  background-color: rgb(253, 133, 133) !important;*/
+/*}*/
 
 
 
