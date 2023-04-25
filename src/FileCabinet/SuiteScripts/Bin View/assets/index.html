@@ -8,10 +8,58 @@
     <link rel="stylesheet" href="assets/css/warehouse-fp.css">
     <script src="assets/csv/Primary-Bins.js"></script>
     <script src="assets/js/warehouse-fs.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+<dialog id = "inventorydetail">
+    <button id="close-dialog">&times;</button>
+    <h2 id = "dialog-title">Dialog Title</h2>
+    <p id = "dialog-content">Dialog content goes here.</p>
+</dialog>
 
-    <div id="root"></div>
-    
+
+<dialog id = "mainreport">
+    <button id="close-dialog_report">&times;</button>
+    <h2 id = "dialog-report-title">Overall Report</h2>
+    <div id = "dialog-report-content"></div>
+</dialog>
+
+<div id = "controls"><button class="button" id="changeview">Switch View</button></div>
+<div id = "header">
+    <div class="Heading">Digital Warehouse</div>
+    <div class = "filters">
+        <span class="fs-15">Errors:</span>
+        <select id = "filter-flag">
+            <option value = "flag_all">Any</option>
+            <option value = "flag_non_errors">None</option>
+            <option value = "flag_any">All Errors</option>
+            <option value = "flag_sku">Too Many SKUS</option>
+            <option value = "flag_itm_vol">Item Volume Error</option>
+            <option value = "flag_bin_vol">Bin Volume Error</option>
+
+        </select>
+        <span class="fs-15">Utilization:</span>
+        <select id = "filter-utl">
+            <option value = "utl_all">All</option>
+            <option value = "utl_low">Under</option>
+            <option value = "utl_over">Over</option>
+            <option value = "utl_free">Free</option>
+        </select>
+        <button class="button" id = "update-Search">Update</button>
+    </div>
+    <div class ="MainReport_div"><button class="button" id = "MainReport_Button">View Overall Report</button></div>
+</div>
+<div id="root"></div>
+<div id="footer"></div>
+
+<!--<div id="footer" class="footer-css">-->
+<!--    <div id="asile-utl">-->
+<!--        <p><span id="dynamicAsile" class="fs-15">Asile Utilization <span id="asile-no"></span></span>:<span id="asUTL"></span></p>-->
+
+<!--    </div>-->
+<!--    <div id="warehouse-utl">-->
+<!--        <p><span class="fs-15">Warehouse Utilization</span>:<span id="wsUTL"></span></p>-->
+<!--    </div>-->
+<!--</div>-->
 </body>
 </html>
