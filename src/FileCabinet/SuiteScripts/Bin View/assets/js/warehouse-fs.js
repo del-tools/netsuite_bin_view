@@ -619,27 +619,54 @@ onload = function(currentfilters) {
 					var bin_number = this.dataset.bin
 					var items = JSON.parse(this.dataset.items);
 					var htmloutput = ""
-					if(this.classList.contains("flag_sku")){
-						htmloutput = `<div class = "error">This bin has ${binTypeShort.dataset.itemcount} pallets, bin can only hold ${binTypeShort.dataset.pallets}</div>`
+					// if(this.classList.contains("flag_sku")){
+					// 	htmloutput = `<div class = "error">This bin has ${binTypeShort.dataset.itemcount} pallets, bin can only hold ${binTypeShort.dataset.pallets}</div>`
+					// }
+					// if(this.classList.contains("flag_bin_vol")){
+					// 	htmloutput = `<div class = "error">This bin has is missing volumetric data (Height = "${ailseData["bin-width"]}" & Length = "${ailseData["bin-height"]}")</div>`
+					// }
+					// if(this.classList.contains("flag_itm_vol")){
+					// 	htmloutput = `<div class = "error">This bin has items which are missing volumetric data</div>`
+					// }
+					// if(this.classList.contains("both_errors")){
+					// 	htmloutput = `<div class = "error">This bin has mismatched bin types and bin levels</div>`
+					// }
+					// if(this.classList.contains("flag_bin_level")){
+					// 	htmloutput = `<div class = "error">This bin has mismatched bin levels</div>`
+					// }
+					// if(this.classList.contains("flag_bin_type")){
+					// 	htmloutput = `<div class = "error">This bin has mismatched bin types</div>`
+					// }
+					var errorMessages = [];
+
+					if (this.classList.contains("flag_itm_vol")) {
+						errorMessages.push(`<div class="error">This bin has items which are missing volumetric data</div>`);
 					}
-					if(this.classList.contains("flag_bin_vol")){
-						htmloutput = `<div class = "error">This bin has is missing volumetric data (Height = "${ailseData["bin-width"]}" & Length = "${ailseData["bin-height"]}")</div>`
+
+					if (this.classList.contains("flag_sku")) {
+						errorMessages.push(`<div class="error">This bin has ${binTypeShort.dataset.itemcount} pallets, bin can only hold ${binTypeShort.dataset.pallets}</div>`);
 					}
-					if(this.classList.contains("flag_itm_vol")){
-						htmloutput = `<div class = "error">This bin has items which are missing volumetric data</div>`
+
+					if (this.classList.contains("flag_bin_vol")) {
+						errorMessages.push(`<div class="error">This bin is missing volumetric data (Height = "${ailseData["bin-width"]}" & Length = "${ailseData["bin-height"]}")</div>`);
 					}
-					if(this.classList.contains("both_errors")){
-						htmloutput = `<div class = "error">This bin has mismatched bin types and bin levels</div>`
+
+					if (this.classList.contains("both_errors")) {
+						errorMessages.push(`<div class="error">This bin has mismatched bin types and bin levels</div>`);
 					}
-					if(this.classList.contains("flag_bin_level")){
-						htmloutput = `<div class = "error">This bin has mismatched bin levels</div>`
+
+					if (this.classList.contains("flag_bin_level")) {
+						errorMessages.push(`<div class="error">This bin has mismatched bin levels</div>`);
 					}
-					if(this.classList.contains("flag_bin_type")){
-						htmloutput = `<div class = "error">This bin has mismatched bin types</div>`
+
+					if (this.classList.contains("flag_bin_type")) {
+						errorMessages.push(`<div class="error">This bin has mismatched bin types</div>`);
 					}
+
+					htmloutput = errorMessages.join("");
+
 					htmloutput = htmloutput + "<table><tr><th>Item</th><th>MPN</th><th>Description</th><th>Quantity On Hand</th><th>UTL</th><th class = 'extrainfo'>Width</th><th class = 'extrainfo'>Height</th><th class = 'extrainfo'>Depth</th></tr>"
 
-					//INDER PLEASE LOOK INTO WHY THIS IS NOT CALCULATING AS EXPECTED
 					items.forEach(function(item){
 						var highlight_row = ""
 						if(isEmpty(item.width)||isEmpty(item.height)||isEmpty(item.depth)){
