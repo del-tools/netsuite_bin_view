@@ -7,10 +7,11 @@ function getdata() {
 
 
 
-
 	jsondata.forEach(function(bin) {
-		// console.log(bin["Bin-Items"].replaceAll("/",",").replace(/""/g, '"').replace(/^"(.*)"$/, '$1'))
-		var items = JSON.parse(bin["Bin-Items"].replaceAll("/",",").replaceAll(/""/g, '"').replace(/^"(.*)"$/, '$1'))
+		// console.log(bin["Bin-Items"].replaceAll("/",","))
+		// var items = JSON.parse(bin["Bin-Items"].replaceAll("/",",").replaceAll(/""/g, '"').replace(/^"(.*)"$/, '$1'))
+		var items = JSON.parse(bin["Bin-Items"].replaceAll("/",","));
+		// console.log(items)
 		var isnewbin = true;
 		var newBinsArray = [];
 		var i = 0;
@@ -19,6 +20,8 @@ function getdata() {
 			if (arrayvalue.bingroup === bin["BinGroup"]) {
 				var newBin = {
 					"bay-number": bin["bay-number"],
+					"BinType": bin["BinType"],
+					"BinLvl": bin["BinLvl"],
 					"BinTypeShort": shortbins(bin["BinType"]).name,
 					"BinTypeModifier": shortbins(bin["BinType"]).UTL_mod,
 					"palletbin": shortbins(bin["BinType"]).palletbin,
@@ -26,8 +29,6 @@ function getdata() {
 					"bin-width": bin["bin-width"],
 					"bin-height": bin["bin-height"],
 					"bin-pallets": bin["bin-pallets"],
-					"req_BinType": shortreqbins(bin["req_BinType"]).name,
-					"req_BinLevel": bin["req_BinLevel"],
 					"Bin-Items":items
 				}
 				outarray[i].bins.push(newBin);
@@ -41,6 +42,8 @@ function getdata() {
 				"bingroup": bin["BinGroup"],
 				"bins": [{
 					"bay-number": bin["bay-number"],
+					"BinType": bin["BinType"],
+					"BinLvl": bin["BinLvl"],
 					"BinTypeShort": shortbins(bin["BinType"]).name,
 					"BinTypeModifier": shortbins(bin["BinType"]).UTL_mod,
 					"palletbin": shortbins(bin["BinType"]).palletbin,
@@ -48,8 +51,6 @@ function getdata() {
 					"bin-width": bin["bin-width"],
 					"bin-height": bin["bin-height"],
 					"bin-pallets": bin["bin-pallets"],
-					"req_BinType": shortreqbins(bin["req_BinType"]).name,
-					"req_BinLevel": bin["req_BinLevel"],
 					"Bin-Items":items
 				}]
 			});
@@ -178,8 +179,8 @@ function shortbins(bintype) {
 	}
 }
 
-function shortreqbins(req_BinType) {
-	switch (req_BinType) {
+/*function shortreqbins(binType_req) {
+	switch (binType_req) {
 		case 'Pallet - Oversize':
 			return{
 				name:'P-OS',
@@ -258,7 +259,7 @@ function shortreqbins(req_BinType) {
 
 			}
 	}
-}
+}*/
 
 
 function csvJSON(csv) {
@@ -507,9 +508,35 @@ onload = function(currentfilters) {
 				if(tempitem_utl == 0){
 					binTypeShort.classList.add("flag_itm_vol","FLAG", "col-red");
 				}
-				if(ailseData["BinTypeShort"] !== ailseData["req_BinType"]){
-					binTypeShort.classList.add("flag_bin_type","FLAG", "col-red");
+
+
+
+				let hasBinLevelError = false;
+				let hasBinTypeError = false;
+
+				for (let f = 0; f < ailseData["Bin-Items"].length; f++) {
+					if (ailseData["Bin-Items"][f]["binlvl_req"] !== "- None -" && ailseData["Bin-Items"][f]["binlvl_req"] !== ailseData["BinLvl"]) {
+						hasBinLevelError = true;
+					}
+					if (ailseData["Bin-Items"][f]["binType_req"] !== "- None -" && ailseData["Bin-Items"][f]["binType_req"] !== ailseData["BinType"]) {
+						hasBinTypeError = true;
+					}
 				}
+
+				if (hasBinLevelError && hasBinTypeError) {
+					binTypeShort.classList.add("both_errors", "FLAG", "col-red");
+				} else {
+					if (hasBinLevelError) {
+						binTypeShort.classList.add("flag_bin_level", "FLAG", "col-red");
+					}
+
+					if (hasBinTypeError) {
+						binTypeShort.classList.add("flag_bin_type", "FLAG", "col-red");
+					}
+				}
+
+
+
 				if(ailseData["palletbin"]){
 					ailseData["Bin-Items"][z].itemutl = (palletPercent*100).toFixed(0)
 					try {
@@ -600,6 +627,15 @@ onload = function(currentfilters) {
 					}
 					if(this.classList.contains("flag_itm_vol")){
 						htmloutput = `<div class = "error">This bin has items which are missing volumetric data</div>`
+					}
+					if(this.classList.contains("both_errors")){
+						htmloutput = `<div class = "error">This bin has mismatched bin types and bin levels</div>`
+					}
+					if(this.classList.contains("flag_bin_level")){
+						htmloutput = `<div class = "error">This bin has mismatched bin levels</div>`
+					}
+					if(this.classList.contains("flag_bin_type")){
+						htmloutput = `<div class = "error">This bin has mismatched bin types</div>`
 					}
 					htmloutput = htmloutput + "<table><tr><th>Item</th><th>MPN</th><th>Description</th><th>Quantity On Hand</th><th>UTL</th><th class = 'extrainfo'>Width</th><th class = 'extrainfo'>Height</th><th class = 'extrainfo'>Depth</th></tr>"
 
@@ -1031,6 +1067,12 @@ var current_view = 0;
 				break;
 			case "flag_bin_type":
 				currentfilters.main.not.push(".flag_bin_type");
+				break;
+			case "flag_bin_level":
+				currentfilters.main.not.push(".flag_bin_level");
+				break;
+			case "both_errors":
+				currentfilters.main.not.push(".both_errors");
 				break;
 		}
 		switch (filter_utl_text) {
