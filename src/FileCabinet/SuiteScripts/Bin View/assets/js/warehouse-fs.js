@@ -511,8 +511,8 @@ onload = function(currentfilters) {
 
 
 
-				let hasBinLevelError = false;
-				let hasBinTypeError = false;
+				var hasBinLevelError = false;
+				var hasBinTypeError = false;
 
 				for (let f = 0; f < ailseData["Bin-Items"].length; f++) {
 					if (ailseData["Bin-Items"][f]["binlvl_req"] !== "- None -" && ailseData["Bin-Items"][f]["binlvl_req"] !== ailseData["BinLvl"]) {
@@ -668,12 +668,32 @@ onload = function(currentfilters) {
 					htmloutput = htmloutput + "<table><tr><th>Item</th><th>MPN</th><th>Description</th><th>Quantity On Hand</th><th>UTL</th><th class = 'extrainfo'>Width</th><th class = 'extrainfo'>Height</th><th class = 'extrainfo'>Depth</th></tr>"
 
 					items.forEach(function(item){
-						var highlight_row = ""
-						if(isEmpty(item.width)||isEmpty(item.height)||isEmpty(item.depth)){
-							highlight_row = " class = 'rowhighlight'";
+						var highlight_row = "";
+						var hasErrors = false;
+
+						if(isEmpty(item.width) || isEmpty(item.height) || isEmpty(item.depth)){
+							highlight_row = " rowhighlight";
+							hasErrors = true;
 						}
-						htmloutput = htmloutput + `<tr ${highlight_row}><td>${item.item}</td><td>${item.mpn}</td><td>${item.desc}</td><td>${item.qty}</td><td>${item.itemutl + "%"}</td><td class = 'extrainfo'>${item.width}</td><td class = 'extrainfo'>${item.height}</td><td class = 'extrainfo'>${item.depth}</td></tr>`;
+						// NEED TO CHECK WITH KRIS
+						for (let g = 0; g < ailseData["Bin-Items"].length; g++) {
+							if (ailseData["Bin-Items"][g]["binlvl_req"] !== "- None -" && ailseData["Bin-Items"][g]["binlvl_req"] !== ailseData["BinLvl"]) {
+								highlight_row = " rowhighlight";
+								hasErrors = true;
+							}
+							if (ailseData["Bin-Items"][g]["binType_req"] !== "- None -" && ailseData["Bin-Items"][g]["binType_req"] !== ailseData["BinType"]) {
+								highlight_row = " rowhighlight";
+								hasErrors = true;
+							}
+						}
+						if(binTypeShort.dataset.itemcount > binTypeShort.dataset.pallets && ["P-OS","B-HH","B-FH","B-TH","P-FH","P-HH","","","","",""].indexOf(ailseData.BinTypeShort) > -1){
+							highlight_row = " rowhighlight";
+							hasErrors = true;
+						}
+
+						htmloutput += `<tr${hasErrors ? " class='" + highlight_row + "'" : ""}><td>${item.item}</td><td>${item.mpn}</td><td>${item.desc}</td><td>${item.qty}</td><td>${item.itemutl + "%"}</td><td class='extrainfo'>${item.width}</td><td class='extrainfo'>${item.height}</td><td class='extrainfo'>${item.depth}</td></tr>`;
 					})
+
 					htmloutput = htmloutput + `</table>
 <button id = "viewmore" onclick="document.querySelectorAll('.extrainfo').forEach(element => {element.style.display = 'table-cell';});">View Extra Detail</button>`;
 
@@ -1129,6 +1149,93 @@ var current_view = 0;
 			}
 
 	});
+
+	//DRAG DIALOG BOX inventorydetail
+	dragElementinventorydetail(document.getElementById("inventorydetail"));
+
+	function dragElementinventorydetail(elmnt) {
+		var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+		if (document.getElementById("inventorydetail")) {
+			/* if present, the header is where you move the DIV from:*/
+			document.getElementById("inventorydetail").onmousedown = dragMouseDown;
+		} else {
+			/* otherwise, move the DIV from anywhere inside the DIV:*/
+			elmnt.onmousedown = dragMouseDown;
+		}
+		function dragMouseDown(e) {
+			e = e || window.event;
+			e.preventDefault();
+			// get the mouse cursor position at startup:
+			pos3 = e.clientX;
+			pos4 = e.clientY;
+			document.onmouseup = closeDragElement;
+			// call a function whenever the cursor moves:
+			document.onmousemove = elementDrag;
+		}
+
+		function elementDrag(e) {
+			e = e || window.event;
+			e.preventDefault();
+			// calculate the new cursor position:
+			pos1 = pos3 - e.clientX;
+			pos2 = pos4 - e.clientY;
+			pos3 = e.clientX;
+			pos4 = e.clientY;
+			// set the element's new position:
+			elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+			elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+		}
+
+		function closeDragElement() {
+			/* stop moving when mouse button is released:*/
+			document.onmouseup = null;
+			document.onmousemove = null;
+		}
+	}
+
+	//DRAG DIALOG BOX mainreport
+	dragElementmainreport(document.getElementById("mainreport"));
+
+	function dragElementmainreport(elmnt) {
+		var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+		if (document.getElementById("mainreport")) {
+			/* if present, the header is where you move the DIV from:*/
+			document.getElementById("mainreport").onmousedown = dragMouseDown;
+		} else {
+			/* otherwise, move the DIV from anywhere inside the DIV:*/
+			elmnt.onmousedown = dragMouseDown;
+		}
+		function dragMouseDown(e) {
+			e = e || window.event;
+			e.preventDefault();
+			// get the mouse cursor position at startup:
+			pos3 = e.clientX;
+			pos4 = e.clientY;
+			document.onmouseup = closeDragElement;
+			// call a function whenever the cursor moves:
+			document.onmousemove = elementDrag;
+		}
+
+		function elementDrag(e) {
+			e = e || window.event;
+			e.preventDefault();
+			// calculate the new cursor position:
+			pos1 = pos3 - e.clientX;
+			pos2 = pos4 - e.clientY;
+			pos3 = e.clientX;
+			pos4 = e.clientY;
+			// set the element's new position:
+			elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+			elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+		}
+
+		function closeDragElement() {
+			/* stop moving when mouse button is released:*/
+			document.onmouseup = null;
+			document.onmousemove = null;
+		}
+	}
+
 
 
 	function updatefilters(filterarray){
