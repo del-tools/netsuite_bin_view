@@ -11,7 +11,7 @@ function getdata() {
 		// console.log(bin["Bin-Items"].replaceAll("/",","))
 		// var items = JSON.parse(bin["Bin-Items"].replaceAll("/",",").replaceAll(/""/g, '"').replace(/^"(.*)"$/, '$1'))
 		var items = JSON.parse(bin["Bin-Items"].replaceAll("/",","));
-		// console.log(items)
+		console.log(items)
 		var isnewbin = true;
 		var newBinsArray = [];
 		var i = 0;
@@ -460,7 +460,6 @@ onload = function(currentfilters) {
 		const binGroup_bins = document.createElement("div");
 		binGroup_bins.classList.add("binGroup_bins")
 		for (let i = 0; i < data[j].bins.length; i++) {
-
 			const ailseData = data[j].bins[i];
 			var csspicking = "non-picking-bin"
 			if(ailseData["picking-bin"] == 'true'){
@@ -471,6 +470,10 @@ onload = function(currentfilters) {
 			const binTypeShort = document.createElement("div");
 			binTypeShort.dataset.itemcount = ailseData["Bin-Items"].length;
 			binTypeShort.dataset.bin = ailseData["bay-number"];
+			console.log(data[j].bins[i])
+			binTypeShort.dataset.BinLvl = data[j].bins[i].BinLvl;
+			//console.log(binTypeShort.dataset.bin + " = " + data[j].bins[i].BinLvl)
+			binTypeShort.dataset.BinType = data[j].bins[i].BinType;
 			var utl_used = 0;
 			var flag_items = false
 			var flag_bin = false
@@ -523,9 +526,8 @@ onload = function(currentfilters) {
 					}
 				}
 
-				if (hasBinLevelError && hasBinTypeError) {
-					binTypeShort.classList.add("both_errors", "FLAG", "col-red");
-				} else {
+
+				if(hasBinLevelError || hasBinTypeError){
 					if (hasBinLevelError) {
 						binTypeShort.classList.add("flag_bin_level", "FLAG", "col-red");
 					}
@@ -533,7 +535,10 @@ onload = function(currentfilters) {
 					if (hasBinTypeError) {
 						binTypeShort.classList.add("flag_bin_type", "FLAG", "col-red");
 					}
+					binTypeShort.classList.add("flag_bin_type_lvl", "FLAG", "col-red");
 				}
+
+
 
 
 
@@ -665,12 +670,12 @@ onload = function(currentfilters) {
 
 					htmloutput = errorMessages.join("");
 
-					htmloutput = htmloutput + "<table><tr><th>Item</th><th>MPN</th><th>Description</th><th>Quantity On Hand</th><th>UTL</th><th class = 'extrainfo'>Width</th><th class = 'extrainfo'>Height</th><th class = 'extrainfo'>Depth</th></tr>"
+					htmloutput = htmloutput + "<table><tr><th>Item</th><th>MPN</th><th>Description</th><th>Quantity On Hand</th><th>UTL</th><th class = 'extrainfo'>Width</th><th class = 'extrainfo'>Height</th><th class = 'extrainfo'>Depth</th><th class = 'extrainfo'>Bin Type Require</th><th class = 'extrainfo'>Bin Level Required</th></tr>"
 
 					items.forEach(function(item){
 						var highlight_row = "";
 						var hasErrors = false;
-
+						console.log(items);
 						if(isEmpty(item.width) || isEmpty(item.height) || isEmpty(item.depth)){
 							highlight_row = " rowhighlight";
 							hasErrors = true;
@@ -691,14 +696,14 @@ onload = function(currentfilters) {
 							hasErrors = true;
 						}
 
-						htmloutput += `<tr${hasErrors ? " class='" + highlight_row + "'" : ""}><td>${item.item}</td><td>${item.mpn}</td><td>${item.desc}</td><td>${item.qty}</td><td>${item.itemutl + "%"}</td><td class='extrainfo'>${item.width}</td><td class='extrainfo'>${item.height}</td><td class='extrainfo'>${item.depth}</td></tr>`;
+						htmloutput += `<tr${hasErrors ? " class='" + highlight_row + "'" : ""}><td>${item.item}</td><td>${item.mpn}</td><td>${item.desc}</td><td>${item.qty}</td><td>${item.itemutl + "%"}</td><td class='extrainfo'>${item.width}</td><td class='extrainfo'>${item.height}</td><td class='extrainfo'>${item.depth}</td><td class='extrainfo'>${item.binType_req}</td><td class='extrainfo'>${item.binlvl_req}</td></tr>`;
 					})
 
 					htmloutput = htmloutput + `</table>
 <button id = "viewmore" onclick="document.querySelectorAll('.extrainfo').forEach(element => {element.style.display = 'table-cell';});">View Extra Detail</button>`;
 
-
-					dialog_title.innerHTML=  `${bin_number} [${ailseData.BinTypeShort}] - ${binTypeShort.dataset.utlvol}`;
+					console.log(binTypeShort.dataset)
+					dialog_title.innerHTML=  `${bin_number} [${ailseData.BinTypeShort}] - ${binTypeShort.dataset.utlvol}</br><p style = "font-size:14px;font-weight:200;">Bin Level: ${binTypeShort.dataset.BinLvl}</br>Bin Type: ${binTypeShort.dataset.BinType}</p>`;
 					dialog_content.innerHTML = htmloutput;
 					dialog.show();
 					// ////console.log(`Width ${items[1]}`);
@@ -1112,14 +1117,14 @@ var current_view = 0;
 			case "flag_bin_vol":
 				currentfilters.main.not.push(".flag_bin_vol");
 				break;
-			case "flag_bin_type":
-				currentfilters.main.not.push(".flag_bin_type");
-				break;
-			case "flag_bin_level":
-				currentfilters.main.not.push(".flag_bin_level");
-				break;
+			// case "flag_bin_type":
+			// 	currentfilters.main.not.push(".flag_bin_type");
+			// 	break;
+			// case "flag_bin_level":
+			// 	currentfilters.main.not.push(".flag_bin_level");
+			// 	break;
 			case "both_errors":
-				currentfilters.main.not.push(".both_errors");
+				currentfilters.main.not.push(".flag_bin_type_lvl");
 				break;
 		}
 		switch (filter_utl_text) {
