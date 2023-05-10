@@ -11,7 +11,7 @@ function getdata() {
 		// console.log(bin["Bin-Items"].replaceAll("/",","))
 		// var items = JSON.parse(bin["Bin-Items"].replaceAll("/",",").replaceAll(/""/g, '"').replace(/^"(.*)"$/, '$1'))
 		var items = JSON.parse(bin["Bin-Items"].replaceAll("/",","));
-		console.log(items)
+		// console.log(items)
 		var isnewbin = true;
 		var newBinsArray = [];
 		var i = 0;
@@ -470,7 +470,7 @@ onload = function(currentfilters) {
 			const binTypeShort = document.createElement("div");
 			binTypeShort.dataset.itemcount = ailseData["Bin-Items"].length;
 			binTypeShort.dataset.bin = ailseData["bay-number"];
-			console.log(data[j].bins[i])
+			// console.log(data[j].bins[i])
 			binTypeShort.dataset.BinLvl = data[j].bins[i].BinLvl;
 			//console.log(binTypeShort.dataset.bin + " = " + data[j].bins[i].BinLvl)
 			binTypeShort.dataset.BinType = data[j].bins[i].BinType;
@@ -645,11 +645,11 @@ onload = function(currentfilters) {
 					var errorMessages = [];
 
 					if (this.classList.contains("flag_itm_vol")) {
-						errorMessages.push(`<div class="error">This bin has items which are missing volumetric data</div>`);
+						errorMessages.push(`<div class="error"><span class="error-symbol">&#x2696;</span> This bin has items which are missing volumetric data</div>`);
 					}
 
 					if (this.classList.contains("flag_sku")) {
-						errorMessages.push(`<div class="error">This bin has ${binTypeShort.dataset.itemcount} pallets, bin can only hold ${binTypeShort.dataset.pallets}</div>`);
+						errorMessages.push(`<div class="error"><span class="error-symbol">&#x21AF;</span> This bin has ${binTypeShort.dataset.itemcount} pallets, bin can only hold ${binTypeShort.dataset.pallets}</div>`);
 					}
 
 					if (this.classList.contains("flag_bin_vol")) {
@@ -661,50 +661,67 @@ onload = function(currentfilters) {
 					}
 
 					if (this.classList.contains("flag_bin_level")) {
-						errorMessages.push(`<div class="error">This bin has mismatched bin levels</div>`);
+						errorMessages.push(`<div class="error"><span class="error-symbol">&#x2279;</span> This bin has mismatched bin levels </div>`);
 					}
 
 					if (this.classList.contains("flag_bin_type")) {
-						errorMessages.push(`<div class="error">This bin has mismatched bin types</div>`);
+						errorMessages.push(`<div class="error"><span class="error-symbol">&#x2247;</span> This bin has mismatched bin types </div>`);
 					}
 
 					htmloutput = errorMessages.join("");
 
-					htmloutput = htmloutput + "<table><tr><th>Item</th><th>MPN</th><th>Description</th><th>Quantity On Hand</th><th>UTL</th><th class = 'extrainfo'>Width</th><th class = 'extrainfo'>Height</th><th class = 'extrainfo'>Depth</th><th class = 'extrainfo'>Bin Type Require</th><th class = 'extrainfo'>Bin Level Required</th></tr>"
+					htmloutput = htmloutput + "<table class='table-css'><tr><th>Item</th><th>MPN</th><th>Description</th><th>Quantity On Hand</th><th>UTL</th><th class = 'extrainfo'>Width</th><th class = 'extrainfo'>Height</th><th class = 'extrainfo'>Depth</th><th class = 'extrainfo'>Bin Type Require</th><th class = 'extrainfo'>Bin Level Required</th><th>Errors List</th></tr>"
 
 					items.forEach(function(item){
+						var errorsymbols= [];
 						var highlight_row = "";
 						var hasErrors = false;
-						console.log(items);
+						var hasbinlvlerror = false;
+						var hasbintypeerror = false;
+
+						// console.log(items);
 						if(isEmpty(item.width) || isEmpty(item.height) || isEmpty(item.depth)){
 							highlight_row = " rowhighlight";
 							hasErrors = true;
+							errorsymbols.push('<span class="error-msg-title" title="&#x2696;This bin has items which are missing volumetric data">&#x2696;</span>');
+							console.log(errorsymbols)
 						}
-						// NEED TO CHECK WITH KRIS
+
 						for (let g = 0; g < ailseData["Bin-Items"].length; g++) {
 							if (ailseData["Bin-Items"][g]["binlvl_req"] !== "- None -" && ailseData["Bin-Items"][g]["binlvl_req"] !== ailseData["BinLvl"]) {
 								highlight_row = " rowhighlight";
 								hasErrors = true;
+								hasbinlvlerror = true;
 							}
 							if (ailseData["Bin-Items"][g]["binType_req"] !== "- None -" && ailseData["Bin-Items"][g]["binType_req"] !== ailseData["BinType"]) {
 								highlight_row = " rowhighlight";
 								hasErrors = true;
+								hasbintypeerror = true;
 							}
+						}
+						if(hasbinlvlerror){
+							errorsymbols.push('<span class="error-msg-title" title="&#x2279; This bin has mismatched bin levels">&#x2279;</span>');
+						}
+						if(hasbintypeerror){
+							errorsymbols.push('<span class="error-msg-title" title="&#x2247; This bin has mismatched bin types">&#x2247;</span>');
 						}
 						if(binTypeShort.dataset.itemcount > binTypeShort.dataset.pallets && ["P-OS","B-HH","B-FH","B-TH","P-FH","P-HH","","","","",""].indexOf(ailseData.BinTypeShort) > -1){
 							highlight_row = " rowhighlight";
 							hasErrors = true;
+							errorsymbols.push('<span class="error-msg-title" title="&#x21AF; This bin has ' + binTypeShort.dataset.itemcount + ' pallets, bin can only hold ' + binTypeShort.dataset.pallets + '">&#x21AF;</span>');
+							console.log(errorsymbols)
 						}
-
-						htmloutput += `<tr${hasErrors ? " class='" + highlight_row + "'" : ""}><td>${item.item}</td><td>${item.mpn}</td><td>${item.desc}</td><td>${item.qty}</td><td>${item.itemutl + "%"}</td><td class='extrainfo'>${item.width}</td><td class='extrainfo'>${item.height}</td><td class='extrainfo'>${item.depth}</td><td class='extrainfo'>${item.binType_req}</td><td class='extrainfo'>${item.binlvl_req}</td></tr>`;
+						// console.log(errorsymbols)
+						htmloutput += `<tr${hasErrors ? " class='" + highlight_row + "'" : ""}><td>${item.item}</td><td>${item.mpn}</td><td>${item.desc}</td><td>${item.qty}</td><td>${item.itemutl + "%"}</td><td class='extrainfo'>${item.width}</td><td class='extrainfo'>${item.height}</td><td class='extrainfo'>${item.depth}</td><td class='extrainfo'>${item.binType_req}</td><td class='extrainfo'>${item.binlvl_req}</td><td class="error-symbol">${errorsymbols}</td></tr>`;
 					})
 
 					htmloutput = htmloutput + `</table>
-<button id = "viewmore" onclick="document.querySelectorAll('.extrainfo').forEach(element => {element.style.display = 'table-cell';});">View Extra Detail</button>`;
+<button class="button" id = "viewmore" onclick="document.querySelectorAll('.extrainfo').forEach(element => {element.style.display = 'table-cell';});">View Extra Detail</button>`;
 
-					console.log(binTypeShort.dataset)
-					dialog_title.innerHTML=  `${bin_number} [${ailseData.BinTypeShort}] - ${binTypeShort.dataset.utlvol}</br><p style = "font-size:14px;font-weight:200;">Bin Level: ${binTypeShort.dataset.BinLvl}</br>Bin Type: ${binTypeShort.dataset.BinType}</p>`;
+					// console.log(binTypeShort.dataset)
+					dialog_title.innerHTML=  `${bin_number} [${ailseData.BinTypeShort}] - ${binTypeShort.dataset.utlvol}</br><p class="bulklvl-bulktype-title">Bin Level: ${binTypeShort.dataset.BinLvl}</p><p class="bulklvl-bulktype-title">Bin Type: ${binTypeShort.dataset.BinType}</p>`;
 					dialog_content.innerHTML = htmloutput;
+
 					dialog.show();
 					// ////console.log(`Width ${items[1]}`);
 				}, false);
@@ -910,7 +927,7 @@ volumearray = {
 			const chart =new Chart(ctx,config);
 		}
 	}
-	console.log(volumearrayall)
+	// console.log(volumearrayall)
 
 
 	var chartnode = document.createElement("canvas");
