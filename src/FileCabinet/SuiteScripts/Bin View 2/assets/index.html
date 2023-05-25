@@ -12,20 +12,25 @@
 
 </head>
 <body>
+
+<!--Dialog box for every bin with all the details-->
 <dialog id = "inventorydetail">
     <button id="close-dialog">&times;</button>
     <h2 id = "dialog-title">Dialog Title</h2>
     <p id = "dialog-content">Dialog content goes here.</p>
 </dialog>
 
-
+<!--Dialog box report for overall warehouse with utilization details-->
 <dialog id = "mainreport">
     <button id="close-dialog_report">&times;</button>
     <h2 id = "dialog-report-title">Overall Report</h2>
     <div id = "dialog-report-content"></div>
 </dialog>
 
+<!--Button to change view from horizontal to vartical or vartical to horizontal-->
 <div id = "controls"><button class="button" id="changeview">Switch View</button></div>
+
+<!--Header with error and utilization filters and overall report button-->
 <div id = "header">
     <div class="Heading">Digital Warehouse</div>
     <div class = "filters">
@@ -53,7 +58,11 @@
     </div>
     <div class ="MainReport_div"><button class="button" id = "MainReport_Button">View Overall Report</button></div>
 </div>
+
+<!--ID root for all bins details from the JS file -->
 <div id="root"></div>
+
+<!--Tag for footer charts-->
 <div id="footer"></div>
 
 <!--<div id="footer" class="footer-css">-->

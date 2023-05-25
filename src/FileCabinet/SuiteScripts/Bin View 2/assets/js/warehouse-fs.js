@@ -1,23 +1,29 @@
+//Initialize variables
 const lowutl = 60;
 var volumearray = {}
 
+
+/**
+ * Retrieves and processes data from CSV, organizes it into bin groups, and returns the output as an array of objects.
+ *
+ * @returns {Array} - The output array containing organized bin group data.
+ */
 function getdata() {
-	let outarray = [];
-	let jsondata = csvJSON(CSV);
-
-
+	let outarray = []; // Initialize an empty array to store the output data
+	let jsondata = csvJSON(CSV); // Convert CSV data to JSON format
 
 	jsondata.forEach(function(bin) {
 		// console.log(bin["Bin-Items"].replaceAll("/",","))
 		// var items = JSON.parse(bin["Bin-Items"].replaceAll("/",",").replaceAll(/""/g, '"').replace(/^"(.*)"$/, '$1'))
-		var items = JSON.parse(bin["Bin-Items"].replaceAll("/",","));
+		var items = JSON.parse(bin["Bin-Items"].replaceAll("/",",")); // Parse the "Bin-Items" string as JSON and store it in the 'items' variable
 		// console.log(items)
-		var isnewbin = true;
+		var isnewbin = true; // Flag to check if the bin group is new or already exists in the output array
 		var newBinsArray = [];
 		var i = 0;
 		outarray.forEach(function(arrayvalue) {
 
 			if (arrayvalue.bingroup === bin["BinGroup"]) {
+				// If the bin group already exists in the output array, add the new bin to the existing group
 				var newBin = {
 					"bay-number": bin["bay-number"],
 					"BinType": bin["BinType"],
@@ -38,6 +44,7 @@ function getdata() {
 		});
 
 		if (isnewbin === true) {
+			// If the bin group is new, create a new entry in the output array for the bin group
 			outarray.push({
 				"bingroup": bin["BinGroup"],
 				"bins": [{
@@ -57,12 +64,10 @@ function getdata() {
 		}
 	});
 
-
-
-	return outarray;
+	return outarray; // Return the final output array
 }
 
-
+// Variable for chart to show reports
 var chartColors = {
 	background:{
 		"All":"rgba(201, 203, 207, 0.2)",
@@ -84,6 +89,13 @@ var chartColors = {
 	},
 }
 
+
+/**
+ * Returns a short representation and additional information for a given bin type.
+ *
+ * @param {string} bintype - The bin type to retrieve short representation and information for.
+ * @returns {Object} - An object containing the short representation, UTL modifier, and pallet bin information.
+ */
 function shortbins(bintype) {
 	switch (bintype) {
 		case 'Pallet - Oversize':
@@ -261,33 +273,40 @@ function shortbins(bintype) {
 	}
 }*/
 
-
+/**
+ * Converts a CSV string to a JSON array of objects.
+ *
+ * @param {string} csv - The CSV string to convert.
+ * @returns {Array} - The JSON array of objects representing the CSV data.
+ */
 function csvJSON(csv) {
 
-	var lines = csv.split("\n");
+	var lines = csv.split("\n"); // Split CSV data when line ends
 
-	var result = [];
+	var result = []; // To store results
 
-	var headers = lines[0].split(",");
+	var headers = lines[0].split(","); // Split first line of CSV by "," to get headers
 
+	// Loop to process each line of the CSV data
 	for (var i = 1; i < lines.length; i++) {
 
+		// Object to store data for current line
 		var obj = {};
+		// Split current line by "," to get values
 		var currentline = lines[i].split(",");
 
+		// Assign values to object properties using headers as keys
 		for (var j = 0; j < headers.length; j++) {
 			obj[headers[j]] = currentline[j];
 		}
 
-		result.push(obj);
+		result.push(obj); // Push the object into the result array
 
 	}
 
 	//return result; //JavaScript object
-	return result; //JSON
+	return result; // Return the result array as JSON
 }
-
-
 
 
 var jsonData = getdata();
@@ -296,6 +315,8 @@ console.log(jsonData)
 
 
 onload = function(currentfilters) {
+
+	//Initializes variables
 	var currentfilters = {
 		main:{
 			not:[],
@@ -360,11 +381,15 @@ onload = function(currentfilters) {
 		}
 	}
 
+	// Get the base and footer div elements by their respective IDs
 	const baseDiv = document.getElementById("root");
 	const footerDiv = document.getElementById("footer");
+	// Assign jsonData to the data variable
 	const data = jsonData
+	// Initialize variables to track total bin volume and total item volume
 	var totalbinvolume_all = 0
 	var totalItemvolume_all = 0
+	// Get the dialog element and its content, title, and close button by their respective IDs
 	var dialog = document.getElementById("inventorydetail")
 	var dialog_content = document.getElementById("dialog-content")
 	var dialog_title = document.getElementById("dialog-title")
@@ -386,10 +411,10 @@ onload = function(currentfilters) {
 
 	for (let j = 0; j < data.length; j++) {
 	//for (let j = 0; j < 1; j++) {
-		let number = data[j].bingroup.slice(-2);
-		var aislename = data[j].bingroup.substring(0, 1);
+		let number = data[j].bingroup.slice(-2); // Get the last two characters of the bingroup string
+		var aislename = data[j].bingroup.substring(0, 1); // Get the first character of the bingroup string
 		if (aisle != aislename) {
-
+			// Reset the available and used space for each bin type in the volumearray object
 			volumearray["B-FH"]["Available Space"] = 0;
 			volumearray["B-FH"]["Used Space"] = 0;
 			volumearray["B-HH"]["Available Space"] = 0;
@@ -405,14 +430,17 @@ onload = function(currentfilters) {
 
 			//console.log("New Array",volumearray)
 
+			// Reset totalbinaval and totalitmused
 			totalbinaval = 0;
 			totalitmused = 0;
-			asile_count++
-			aisle = data[j].bingroup.substring(0, 1);
+			asile_count++; // Increment the aisle count
+			aisle = data[j].bingroup.substring(0, 1); // Update the aisle variable with the new aisle name
+			// Create new elements for the odd and even rows, and the aisle container
 			odd = document.createElement("div");
 			even = document.createElement("div");
 			const aisleDiv = document.createElement("div");
 
+			// Add classes and IDs to the aisleDiv and rows
 			aisleDiv.classList.add("aisle",);
 			aisleDiv.id= "aisle-"+aislename
 			baseDiv.appendChild(aisleDiv);
@@ -421,6 +449,7 @@ onload = function(currentfilters) {
 			aisleDiv.appendChild(odd);
 			aisleDiv.appendChild(even);
 
+			// Create elements for displaying aisle UTL and workstation UTL
 			asileUtl = document.createElement("div");
 			wsUtl = document.createElement("div");
 
@@ -436,19 +465,21 @@ onload = function(currentfilters) {
 
 		const bay = document.createElement("div");
 		bay.classList.add("bay");
-		var isOdd = false;
-		var calc_number = number % 2
+		var isOdd = false; // Initialize a variable to track if the bay is odd or even
+		var calc_number = number % 2; // Calculate the modulo of the number to determine if it's odd or even
 		if (calc_number !== 0) {
-			isOdd = true
+			isOdd = true; // Set isOdd to true if the calculated number is not equal to 0
 		}
 
 		if(isOdd){
+			// If the bay is odd, append it to the odd row
 			odd.appendChild(bay);
 			const binGroup = document.createElement("div");
 			binGroup.classList.add("bin-group");
 			binGroup.textContent = data[j].bingroup;
 			bay.appendChild(binGroup);
 		}else{
+			// If the bay is even, append it to the even row
 			const binGroup = document.createElement("div");
 			binGroup.classList.add("bin-group");
 			binGroup.textContent = data[j].bingroup;
@@ -460,44 +491,44 @@ onload = function(currentfilters) {
 		const binGroup_bins = document.createElement("div");
 		binGroup_bins.classList.add("binGroup_bins")
 		for (let i = 0; i < data[j].bins.length; i++) {
-			const ailseData = data[j].bins[i];
-			var csspicking = "non-picking-bin"
+			const ailseData = data[j].bins[i]; // Retrieve the data for the current aisle and bin
+			var csspicking = "non-picking-bin"; // Initialize the CSS class for the picking bin status
 			if(ailseData["picking-bin"] == 'true'){
-				csspicking = "picking-bin"
+				csspicking = "picking-bin"; // Set the CSS class to "picking-bin" if it is a picking bin
 			}
 
-			var binsequence = ailseData["bay-number"].slice(-1);
+			var binsequence = ailseData["bay-number"].slice(-1); // Extract the bin sequence from the bay number
 			const binTypeShort = document.createElement("div");
-			binTypeShort.dataset.itemcount = ailseData["Bin-Items"].length;
-			binTypeShort.dataset.bin = ailseData["bay-number"];
+			binTypeShort.dataset.itemcount = ailseData["Bin-Items"].length; // Set the dataset itemcount to the number of items in the bin
+			binTypeShort.dataset.bin = ailseData["bay-number"]; // Set the dataset bin to the bay number
 			// console.log(data[j].bins[i])
-			binTypeShort.dataset.BinLvl = data[j].bins[i].BinLvl;
+			binTypeShort.dataset.BinLvl = data[j].bins[i].BinLvl; // Set the dataset BinLvl to the bin level
 			//console.log(binTypeShort.dataset.bin + " = " + data[j].bins[i].BinLvl)
-			binTypeShort.dataset.BinType = data[j].bins[i].BinType;
-			var utl_used = 0;
-			var flag_items = false
-			var flag_bin = false
+			binTypeShort.dataset.BinType = data[j].bins[i].BinType; // Set the dataset BinType to the bin type
+			var utl_used = 0; // Initialize the used space variable
+			var flag_items = false; // Flag to track if there are items in the bin
+			var flag_bin = false; // Flag to track if the bin is used
 
-			var utl_avl = 0;
+			var utl_avl = 0; // Initialize the available space variable
 
 			if(data[j].bingroup.substring(0, 1) === "D" || data[j].bingroup.substring(0, 1) === "M"){
 
-				utl_avl = ailseData["bin-width"] * ailseData["bin-height"]*60;
+				utl_avl = ailseData["bin-width"] * ailseData["bin-height"]*60; // Calculate the available space for "D" or "M" bin groups
 
 			} else {
 
-				utl_avl = ailseData["bin-width"] * ailseData["bin-height"]*90;
+				utl_avl = ailseData["bin-width"] * ailseData["bin-height"]*90; // Calculate the available space for other bin groups
 			}
 			////console.log(ailseData["BinTypeModifier"])
 
 
 			if(ailseData["BinTypeModifier"] > 0){
-				utl_avl = utl_avl * (1-ailseData["BinTypeModifier"])
+				utl_avl = utl_avl * (1-ailseData["BinTypeModifier"]); // Adjust the available space based on the BinTypeModifier value
 			}
 			if(ailseData["bin-pallets"]){
-				var palletPercent = 1/ailseData["bin-pallets"]
+				var palletPercent = 1/ailseData["bin-pallets"]; // Calculate the percentage of the bin occupied by each pallet
 			}else{
-				ailseData["palletbin"] = false;
+				ailseData["palletbin"] = false; // Set the palletbin flag to false if the bin does not have a specified number of pallets
 			}
 
 
@@ -509,7 +540,7 @@ onload = function(currentfilters) {
 				}
 
 				if(tempitem_utl == 0){
-					binTypeShort.classList.add("flag_itm_vol","FLAG", "col-red");
+					binTypeShort.classList.add("flag_itm_vol","FLAG", "col-red"); // Add CSS classes to indicate zero item volume error
 				}
 
 
@@ -519,28 +550,24 @@ onload = function(currentfilters) {
 
 				for (let f = 0; f < ailseData["Bin-Items"].length; f++) {
 					if (ailseData["Bin-Items"][f]["binlvl_req"] !== "- None -" && ailseData["Bin-Items"][f]["binlvl_req"] !== ailseData["BinLvl"]) {
-						hasBinLevelError = true;
+						hasBinLevelError = true; // Check if there are bin level errors
 					}
 					if (ailseData["Bin-Items"][f]["binType_req"] !== "- None -" && ailseData["Bin-Items"][f]["binType_req"] !== ailseData["BinType"]) {
-						hasBinTypeError = true;
+						hasBinTypeError = true; // Check if there are bin type errors
 					}
 				}
 
 
 				if(hasBinLevelError || hasBinTypeError){
 					if (hasBinLevelError) {
-						binTypeShort.classList.add("flag_bin_level", "FLAG", "col-red");
+						binTypeShort.classList.add("flag_bin_level", "FLAG", "col-red"); // Add CSS class to indicate bin level error
 					}
 
 					if (hasBinTypeError) {
-						binTypeShort.classList.add("flag_bin_type", "FLAG", "col-red");
+						binTypeShort.classList.add("flag_bin_type", "FLAG", "col-red"); // Add CSS class to indicate bin type error
 					}
-					binTypeShort.classList.add("flag_bin_type_lvl", "FLAG", "col-red");
+					binTypeShort.classList.add("flag_bin_type_lvl", "FLAG", "col-red"); // Add CSS class to indicate both bin type and level errors
 				}
-
-
-
-
 
 				if(ailseData["palletbin"]){
 					ailseData["Bin-Items"][z].itemutl = (palletPercent*100).toFixed(0)
@@ -559,17 +586,17 @@ onload = function(currentfilters) {
 					}catch (e){
 					}
 				}
-				utl_used = utl_used + tempitem_utl
+				utl_used = utl_used + tempitem_utl; // Calculate the total used space
 			}
 			if(ailseData["palletbin"]){
 
-				binTypeShort.dataset.utl = ((palletPercent*binTypeShort.dataset.itemcount)*100).toFixed(0)
+				binTypeShort.dataset.utl = ((palletPercent*binTypeShort.dataset.itemcount)*100).toFixed(0); // Calculate utilization percentage for pallet bins
 			}else{
-				binTypeShort.dataset.utl = ((utl_used/utl_avl)*100).toFixed(0)
+				binTypeShort.dataset.utl = ((utl_used/utl_avl)*100).toFixed(0); // Calculate utilization percentage for non-pallet bins
 			}
 			try{
-				volumearray[ailseData["BinTypeShort"]]["Available Space"] += parseInt(utl_avl);
-				volumearrayall[ailseData["BinTypeShort"]]["Available Space"] += parseInt(utl_avl);
+				volumearray[ailseData["BinTypeShort"]]["Available Space"] += parseInt(utl_avl); // Update available space in the volumearray
+				volumearrayall[ailseData["BinTypeShort"]]["Available Space"] += parseInt(utl_avl); // Update available space in the volumearrayall
 			}catch (e) {
 				////console.log("volumearray Error")
 			}
@@ -577,9 +604,9 @@ onload = function(currentfilters) {
 			////console.log(volumearray)
 			binTypeShort.dataset.items = JSON.stringify(ailseData["Bin-Items"]);
 			if(isEmpty(ailseData["bin-width"])||isEmpty(ailseData["bin-height"]) || ailseData["BinTypeShort"] === 'GO' || ailseData["BinTypeShort"] === 'GI'){
-				binTypeShort.classList.add("flag_bin_vol");
+				binTypeShort.classList.add("flag_bin_vol"); // Add CSS class to indicate missing bin width or height for certain bin types
 			} else if(isEmpty(ailseData["bin-width"])||isEmpty(ailseData["bin-height"])) {
-				binTypeShort.classList.add("flag_bin_vol","FLAG","col-red");
+				binTypeShort.classList.add("flag_bin_vol","FLAG","col-red"); // Add CSS class to indicate missing bin width or height
 			}
 
 
@@ -589,15 +616,15 @@ onload = function(currentfilters) {
 			binTypeShort.dataset.pallets = ailseData["bin-pallets"];
 
 			if (binTypeShort.dataset.utl<lowutl){
-				binTypeShort.classList.add("utl_low");
+				binTypeShort.classList.add("utl_low"); // Add CSS class to indicate low utilization
 			}
 			if(binTypeShort.dataset.utl >100){
-				binTypeShort.classList.add("utl_over");
+				binTypeShort.classList.add("utl_over"); // Add CSS class to indicate over-utilization
 			}
 
 			if(binTypeShort.dataset.itemcount < 1){
 				binTypeShort.dataset.utl = 0;
-				binTypeShort.classList.add("utl_free");
+				binTypeShort.classList.add("utl_free"); // Add CSS class to indicate free bin
 			}
 			var fixed_utl = 100;
 			if(binTypeShort.dataset.utl < 100){
@@ -615,14 +642,14 @@ onload = function(currentfilters) {
 			if(ailseData["Bin-Items"].length != 0){
 				if(binTypeShort.dataset.itemcount > binTypeShort.dataset.pallets && ["P-OS","B-HH","B-FH","B-TH","P-FH","P-HH","","","","",""].indexOf(ailseData.BinTypeShort) > -1){
 					binTypeShort.classList.add("FLAG","flag_sku","col-red");
-					binTypeShort.dataset.bin = ailseData["bay-number"];
+					binTypeShort.dataset.bin = ailseData["bay-number"]; // Add bin number to the dataset attribute
 				}
-				binTypeShort.classList.add("clickable");
-				binTypeShort.dataset.utlvol = utl_avl
+				binTypeShort.classList.add("clickable"); // Add CSS class to make the bin clickable
+				binTypeShort.dataset.utlvol = utl_avl; // Add available space to the dataset attribute
 				binTypeShort.addEventListener("click", function(e){
 				e.stopPropagation(); // Prevents the event from bubbling up to the window
-					var bin_number = this.dataset.bin
-					var items = JSON.parse(this.dataset.items);
+					var bin_number = this.dataset.bin; // Retrieve bin number from the dataset attribute
+					var items = JSON.parse(this.dataset.items); // Parse the JSON string to retrieve the items
 					var htmloutput = ""
 					// if(this.classList.contains("flag_sku")){
 					// 	htmloutput = `<div class = "error">This bin has ${binTypeShort.dataset.itemcount} pallets, bin can only hold ${binTypeShort.dataset.pallets}</div>`
@@ -644,6 +671,7 @@ onload = function(currentfilters) {
 					// }
 					var errorMessages = [];
 
+					// Check for different error conditions and add corresponding error messages
 					if (this.classList.contains("flag_itm_vol")) {
 						errorMessages.push(`<div class="error"><span class="error-symbol">&#x2696;</span> This bin has items which are missing volumetric data</div>`);
 					}
@@ -716,7 +744,7 @@ onload = function(currentfilters) {
 					})
 
 					htmloutput = htmloutput + `</table>
-<button class="button" id = "viewmore" onclick="document.querySelectorAll('.extrainfo').forEach(element => {element.style.display = 'table-cell';});">View Extra Detail</button>`;
+					<button class="button" id = "viewmore" onclick="document.querySelectorAll('.extrainfo').forEach(element => {element.style.display = 'table-cell';});">View Extra Detail</button>`;
 
 					// console.log(binTypeShort.dataset)
 					dialog_title.innerHTML=  `${bin_number} [${ailseData.BinTypeShort}] - ${binTypeShort.dataset.utlvol}</br><p class="bulklvl-bulktype-title">Bin Level: ${binTypeShort.dataset.BinLvl}</p><p class="bulklvl-bulktype-title">Bin Type: ${binTypeShort.dataset.BinType}</p>`;
@@ -726,6 +754,7 @@ onload = function(currentfilters) {
 					// ////console.log(`Width ${items[1]}`);
 				}, false);
 			}
+			// Add CSS classes to binTypeShort based on the value of ailseData.BinTypeShort
 			 if (ailseData.BinTypeShort === "P-OS") {
 				binTypeShort.classList.add("bin", "bintype-pos",csspicking);
 			} else if (ailseData.BinTypeShort === "B-HH") {
@@ -757,6 +786,7 @@ onload = function(currentfilters) {
 		}
 		bay.appendChild(binGroup_bins);
 
+		// Check if the current item is the last item or belongs to a different aisle
 		var nextaisle_new = false
 
 		if(j+1 < data.length ){
@@ -813,16 +843,20 @@ volumearray = {
 
 
 		if(nextaisle_new){
+			// Create a div element for aisle report
 			var utltest = document.createElement("div");
 			utltest.classList.add("asilereport");
+			// Calculate total bin volume and total item volume
 			totalbinvolume_all += totalbinaval
 			totalItemvolume_all += totalitmused
 
+			// Create a canvas element for the chart
 			var chartnode = document.createElement("canvas");
 			chartnode.id = "chart-"+data[j].bingroup.substring(0, 1);
 			chartnode.classList.add("aisle_report_canvas")
 			utltest.appendChild(chartnode)
 
+			// Get the aisle div by ID
 			var aisleDiv = document.getElementById("aisle-"+data[j].bingroup.substring(0, 1))
 
 			aisleDiv.appendChild(utltest);
@@ -847,9 +881,7 @@ volumearray = {
 				}
 			}
 
-
-
-
+			// Configure the chart
 			const config = {
 				type: 'bar',
 				data: {
@@ -876,6 +908,7 @@ volumearray = {
 						yAxisKey: 'utl'
 					},
 					onClick: (e) => {
+						// Handle the click event on the chart
 						var aisleid = `aisle-${chart.canvas.id.slice(-1)}`
 						////console.log(chart);
 						currentfilters.report.not = [];
@@ -901,6 +934,7 @@ volumearray = {
 						tooltip:{
 							callbacks:{
 								footer:(context) => {
+									// Customize the tooltip footer based on the dataset index
 									if(context[0].datasetIndex == 0){
 										return(`Aval : ${context[0].raw.available}\nUsed:${context[0].raw.used}\nFree: ${context[0].raw.available-context[0].raw.used}`)
 									}
@@ -924,33 +958,42 @@ volumearray = {
 					}
 				},
 			};
+			// Create the chart
 			const chart =new Chart(ctx,config);
 		}
 	}
 	// console.log(volumearrayall)
 
-
+	// Create a canvas element for the chart
 	var chartnode = document.createElement("canvas");
 	chartnode.id = "chart-All";
 	//chartnode.classList.add("aisle_report_canvas")
 	const report_dialog = document.getElementById("mainreport");
 
+	// Create a div element to hold the chart data
 	const chartdatanode = document.createElement("div");
 	chartdatanode.classList.add("reportOverview");
 	//chartdatanode.innerHTML = "<h1>test</h1>"
 	//report_dialog.appendChild(chartdatanode)
 	report_dialog.appendChild(chartnode)
+
+	// Get the canvas element by ID
 	const ctx = document.getElementById("chart-All");
+	// Initialize arrays for labels, data, and colors
 	var labels = []
 	var objData = []
 	var allcolors = {
 		background:[],
 		border:[]
 	}
+	// Add the "ALL" label to the labels array
 	labels.push("ALL");
 
+	// Initialize variables for total available and total used space
 	var totalavailable = 0
 	var totalused = 0;
+
+	// Iterate through the volume array for all types
 	for (let key of Object.keys(volumearrayall)) {
 		if(volumearrayall[key]["Used Space"] > 0){
 			labels.push(key)
@@ -966,6 +1009,8 @@ volumearray = {
 			})
 		}
 	}
+
+	// Add the "ALL" data to the data array
 	allcolors.background.push(chartColors.background["All"])
 	allcolors.border.push(chartColors.border["All"])
 	objData.push({
@@ -975,6 +1020,7 @@ volumearray = {
 		available:totalavailable,
 	})
 
+	// Configure the chart
 	const config = {
 		type: 'bar',
 		data: {
@@ -1007,6 +1053,7 @@ volumearray = {
 				tooltip:{
 					callbacks:{
 						footer:(context) => {
+							// Customize the tooltip footer based on the dataset index
 							if(context[0].datasetIndex == 0){
 								return(`Aval : ${context[0].raw.available}\nUsed:${context[0].raw.used}\nFree: ${context[0].raw.available-context[0].raw.used}`)
 							}
@@ -1030,19 +1077,22 @@ volumearray = {
 			}
 		},
 	};
+	// Create the chart using the configured options
 	const chart =new Chart(ctx,config);
 
 
 
-
+	// Get elements with the class "aisle"
 	var domAisles = document.getElementsByClassName("aisle");
 
+	// Add click event listener to the main report button
 	const mainreportbutton = document.getElementById("MainReport_Button");
 	mainreportbutton.addEventListener("click", function(){
 		const report_dialog = document.getElementById("mainreport");
 		report_dialog.show();
 	}, false);
 
+	// Add click event listener to the main report close button
 	const mainreportclosebutton = document.getElementById("close-dialog_report");
 
 	mainreportclosebutton.addEventListener("click", function(){
@@ -1050,39 +1100,44 @@ volumearray = {
 		report_dialog.close()
 	}, false);
 
+	// Loop through the aisle elements
 	for(l=0;l<domAisles.length;l++){
 		domAisles[l].children
 		var oddaisle = domAisles[l].children[0]
 		var evenaisle = domAisles[l].children[1]
 		var oddbays = oddaisle.children.length
 		var evenbays = evenaisle.children.length
+		// Create a div element for the bay
 		const bay = document.createElement("div");
 		bay.classList.add("bay");
+		// Add the bay to the odd aisle if it has no bays
 		if(oddbays == 0){
 
 			oddaisle.appendChild(bay)
 		}
+		// Add the bay to the even aisle if it has no bays
 		if(evenbays == 0){
 			evenaisle.appendChild(bay)
 		}
 	}
 
-
-
-
+	// Update HTML content of wsUtl element
 	wsUtl.innerHTML = `<p><span class="fs-15">Warehouse Utilization</span>:<span></span></p>`;
-	
+	// Set grid-template-columns style of baseDiv element
 	baseDiv.style = `grid-template-columns: repeat(${asile_count+1}, 1fr);`
-
+	// Set grid-template-columns style of footerDiv element
 	footerDiv.style = `grid-template-columns: repeat(${(asile_count+1)}, 1fr);`
+	// Set initial value for current_view variable
 
 	// footerDiv.style = `grid-template-columns: repeat(${asile_count+1}, 1fr);`
 	//baseDiv.style = `grid-template-columns: repeat(2, 1fr);gap: 100px 10px;`
 	////console.log(asile_count+1);
 var current_view = 0;
 
+	// Add click event listener to changeview_button
 	const changeview_button = document.getElementById("changeview");
 	changeview_button.addEventListener("click", function(){
+		// Toggle the grid-template-columns style based on the current_view value
 		if(current_view == 0){
 			baseDiv.style = `grid-template-columns: repeat(4, 1fr);gap: 100px 10px;`
 			current_view = 1;
@@ -1094,15 +1149,18 @@ var current_view = 0;
 	}, false);
 
 
-
-
+	// Add click event listener to closeBtn
 	closeBtn.addEventListener('click', () => {
 		dialog.close();
 	});
+	// Get filter elements
 	var filter_button = document.getElementById("update-Search");
 	var filter_flag = document.getElementById("filter-flag");
 	var filter_utl = document.getElementById("filter-utl");
+
+	// Add click event listener to filter_button
 	filter_button.addEventListener('click', () => {
+		// Reset the currentfilters object
 		currentfilters = {
 			main:{
 				not:[],
@@ -1113,8 +1171,12 @@ var current_view = 0;
 				other:[]
 			}
 		};
-		var filter_flag_text = filter_flag.options[filter_flag.selectedIndex].value
-		var filter_utl_text = filter_utl.options[filter_utl.selectedIndex].value
+
+		// Get the selected values from filter_flag and filter_utl elements
+		var filter_flag_text = filter_flag.options[filter_flag.selectedIndex].value;
+		var filter_utl_text = filter_utl.options[filter_utl.selectedIndex].value;
+
+		// Apply filters based on the selected values
 		switch (filter_flag_text) {
 			case "flag_all":
 				break;
@@ -1157,14 +1219,16 @@ var current_view = 0;
 				currentfilters.main.not.push(".utl_over");
 				break;
 		}
+		// Call the updatefilters function with the currentfilters object
 		updatefilters(currentfilters);
-
 
 	});
 
+	// Add click event listener to dialog
 	dialog.addEventListener('click', (e) => {
 		e.stopPropagation(); // Prevents the event from bubbling up to the window
 	});
+	// Add click event listener to window
 	window.addEventListener('click', (e) => {
 			if (e.target !== dialog && !dialog.contains(e.target)) {
 				dialog.close();
@@ -1259,30 +1323,40 @@ var current_view = 0;
 	}
 
 
-
+	// Function to update filters based on the provided filter array
 	function updatefilters(filterarray){
+		// Reset opacity for all bin elements
 		var elements = document.querySelectorAll('.bin');
 		elements.forEach(element => {
 			element.style.opacity = 1;
 		});
-		var filterstring = ".bin"
+		// Build the filter string based on the filter array
+		var filterstring = ".bin";
+		// Append main.other filters to the filter string
 		filterarray.main.other.forEach(function(filter){
 			filterstring = filterstring + filter
 		})
+		// Append report.other filters to the filter string
 		filterarray.report.other.forEach(function(filter){
 			filterstring = filterstring + filter
 		})
-
+		// Append ":not()" to the filter string to negate main.not and report.not filters
 		filterstring = filterstring + ":not(";
+		// Append main.not filters to the filter string
 		filterarray.main.not.forEach(function(filter){
 			filterstring = filterstring + filter
 		})
+
+		// Append report.not filters to the filter string
 		filterarray.report.not.forEach(function(filter){
 			filterstring = filterstring + filter
 		})
+		// Close the ":not()" section of the filter string
 		filterstring = filterstring + ")";
 
+		// Remove ":not()" if it is empty
 		filterstring = filterstring.replace(":not()","")
+		// Apply opacity to elements matching the filter string
 		if(filterstring != ".bin"){
 			var elements = document.querySelectorAll(filterstring);
 			elements.forEach(element => {
@@ -1291,6 +1365,7 @@ var current_view = 0;
 		}
 
 	}
+	// Function to check if a string is empty
 	function isEmpty(strval){
 		if(strval == "" || strval == " " || strval == null || strval == undefined){
 			return true;
@@ -1298,6 +1373,7 @@ var current_view = 0;
 		return false;
 	}
 
+	// Function to calculate utilization percentage
 	function utl_calc(utl){
 	const full_val = 70;
 	// if(utl>full_val){
