@@ -12,6 +12,7 @@ function getdata() {
 	let outarray = []; // Initialize an empty array to store the output data
 	let jsondata = csvJSON(CSV); // Convert CSV data to JSON format
 
+	//for each loop to run for every bin-item
 	jsondata.forEach(function(bin) {
 		// console.log(bin["Bin-Items"].replaceAll("/",","))
 		// var items = JSON.parse(bin["Bin-Items"].replaceAll("/",",").replaceAll(/""/g, '"').replace(/^"(.*)"$/, '$1'))
@@ -313,7 +314,13 @@ var jsonData = getdata();
 
 console.log(jsonData)
 
-
+/**
+ * The onload function is executed when the page is loaded and initializes various variables.
+ * It retrieves and assigns the JSON data to the 'data' variable.
+ * Several variables are initialized to track total bin volume and total item volume.
+ * Dialog elements, including content, title, and close button, are obtained by their respective IDs.
+ * The function performs calculations and manipulations on the data to set up the visual representation of the warehouse.
+ */
 onload = function(currentfilters) {
 
 	//Initializes variables
@@ -460,8 +467,6 @@ onload = function(currentfilters) {
 		////console.log(volumearray)
 
 		asileUtl.innerHTML = `<p><span class="fs-15">Asile Utilization <span>${data[j].bingroup.substring(0, 1)}</span></span>:<span></span></p>`;
-		
-
 
 		const bay = document.createElement("div");
 		bay.classList.add("bay");
@@ -487,7 +492,6 @@ onload = function(currentfilters) {
 			even.appendChild(bay);
 		}
 
-
 		const binGroup_bins = document.createElement("div");
 		binGroup_bins.classList.add("binGroup_bins")
 		for (let i = 0; i < data[j].bins.length; i++) {
@@ -511,6 +515,7 @@ onload = function(currentfilters) {
 
 			var utl_avl = 0; // Initialize the available space variable
 
+			//Asile D and M has 60cm depth and rest has 90cm
 			if(data[j].bingroup.substring(0, 1) === "D" || data[j].bingroup.substring(0, 1) === "M"){
 
 				utl_avl = ailseData["bin-width"] * ailseData["bin-height"]*60; // Calculate the available space for "D" or "M" bin groups
@@ -548,6 +553,7 @@ onload = function(currentfilters) {
 				var hasBinLevelError = false;
 				var hasBinTypeError = false;
 
+				// for loop to check if there are bin level and bin type is not equal to required bin type and bin level
 				for (let f = 0; f < ailseData["Bin-Items"].length; f++) {
 					if (ailseData["Bin-Items"][f]["binlvl_req"] !== "- None -" && ailseData["Bin-Items"][f]["binlvl_req"] !== ailseData["BinLvl"]) {
 						hasBinLevelError = true; // Check if there are bin level errors
@@ -557,7 +563,7 @@ onload = function(currentfilters) {
 					}
 				}
 
-
+				// Check if there are bin level errors or bin type errors
 				if(hasBinLevelError || hasBinTypeError){
 					if (hasBinLevelError) {
 						binTypeShort.classList.add("flag_bin_level", "FLAG", "col-red"); // Add CSS class to indicate bin level error
@@ -569,18 +575,27 @@ onload = function(currentfilters) {
 					binTypeShort.classList.add("flag_bin_type_lvl", "FLAG", "col-red"); // Add CSS class to indicate both bin type and level errors
 				}
 
+				// Check if the aisle data has the "palletbin" property
 				if(ailseData["palletbin"]){
+					// Calculate the utilization percentage for pallet bins
 					ailseData["Bin-Items"][z].itemutl = (palletPercent*100).toFixed(0)
 					try {
+						// Update the used space in the volumearray for the corresponding bin type
 						volumearray[ailseData["BinTypeShort"]]["Used Space"] += parseInt(palletPercent * utl_avl);
+						// Update the used space in the volumearrayall for the corresponding bin type
 						volumearrayall[ailseData["BinTypeShort"]]["Used Space"] += parseInt(palletPercent * utl_avl);
 					}catch (e){
+						// Handle any errors
 					}
 				}else{
+					// Calculate the utilization percentage for non-pallet bins
 					ailseData["Bin-Items"][z].itemutl = ((tempitem_utl/utl_avl)*100).toFixed(0)
 					try {
+						// Update the used space in the volumearray for the corresponding bin type
 						volumearray[ailseData["BinTypeShort"]]["Used Space"] += parseInt(tempitem_utl);
+						// Update the used space in the volumearrayall for the corresponding bin type
 						volumearrayall[ailseData["BinTypeShort"]]["Used Space"] += parseInt(tempitem_utl);
+						// Additional code specific to "S-R" bin type can be added here
 						if(ailseData["BinTypeShort"] == "S-R"){
 						}
 					}catch (e){
@@ -608,8 +623,6 @@ onload = function(currentfilters) {
 			} else if(isEmpty(ailseData["bin-width"])||isEmpty(ailseData["bin-height"])) {
 				binTypeShort.classList.add("flag_bin_vol","FLAG","col-red"); // Add CSS class to indicate missing bin width or height
 			}
-
-
 
 			// binTypeShort.dataset.utl = ((utl_used / utl_avl) * 100).toFixed(0);
 
@@ -700,6 +713,7 @@ onload = function(currentfilters) {
 
 					htmloutput = htmloutput + "<table class='table-css'><tr><th>Item</th><th>MPN</th><th>Description</th><th>Quantity On Hand</th><th>UTL</th><th class = 'extrainfo'>Width</th><th class = 'extrainfo'>Height</th><th class = 'extrainfo'>Depth</th><th class = 'extrainfo'>Bin Type Require</th><th class = 'extrainfo'>Bin Level Required</th><th>Errors List</th></tr>"
 
+					// Add the errors in each item and shows them in html page
 					items.forEach(function(item){
 						var errorsymbols= [];
 						var highlight_row = "";
@@ -708,6 +722,7 @@ onload = function(currentfilters) {
 						var hasbintypeerror = false;
 
 						// console.log(items);
+						//check for the missing volumetric data
 						if(isEmpty(item.width) || isEmpty(item.height) || isEmpty(item.depth)){
 							highlight_row = " rowhighlight";
 							hasErrors = true;
@@ -715,6 +730,7 @@ onload = function(currentfilters) {
 							console.log(errorsymbols)
 						}
 
+						// for loop to check if there are bin level and bin type is not equal to required bin type and bin level
 						for (let g = 0; g < ailseData["Bin-Items"].length; g++) {
 							if (ailseData["Bin-Items"][g]["binlvl_req"] !== "- None -" && ailseData["Bin-Items"][g]["binlvl_req"] !== ailseData["BinLvl"]) {
 								highlight_row = " rowhighlight";
@@ -727,12 +743,16 @@ onload = function(currentfilters) {
 								hasbintypeerror = true;
 							}
 						}
+
+						// Add mismatched bin error in the every item whcih has this error and shows them in HTML page
 						if(hasbinlvlerror){
 							errorsymbols.push('<span class="error-msg-title" title="&#x2279; This bin has mismatched bin levels">&#x2279;</span>');
 						}
 						if(hasbintypeerror){
 							errorsymbols.push('<span class="error-msg-title" title="&#x2247; This bin has mismatched bin types">&#x2247;</span>');
 						}
+
+						//Adds to many sku error in the every item whcih has this error and shows them in HTML page
 						if(binTypeShort.dataset.itemcount > binTypeShort.dataset.pallets && ["P-OS","B-HH","B-FH","B-TH","P-FH","P-HH","","","","",""].indexOf(ailseData.BinTypeShort) > -1){
 							highlight_row = " rowhighlight";
 							hasErrors = true;
