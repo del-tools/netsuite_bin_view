@@ -690,7 +690,7 @@ onload = function(currentfilters) {
 					}
 
 					if (this.classList.contains("flag_sku")) {
-						errorMessages.push(`<div class="error"><span class="error-symbol">&#x21AF;</span> This bin has ${binTypeShort.dataset.itemcount} pallets, bin can only hold ${binTypeShort.dataset.pallets}</div>`);
+						errorMessages.push(`<div class="error"><span class="error-symbol">&#x21AF;</span> This bin has ${binTypeShort.dataset.itemcount} pallets, but can only hold ${binTypeShort.dataset.pallets}</div>`);
 					}
 
 					if (this.classList.contains("flag_bin_vol")) {
@@ -756,7 +756,7 @@ onload = function(currentfilters) {
 						if(binTypeShort.dataset.itemcount > binTypeShort.dataset.pallets && ["P-OS","B-HH","B-FH","B-TH","P-FH","P-HH","","","","",""].indexOf(ailseData.BinTypeShort) > -1){
 							highlight_row = " rowhighlight";
 							hasErrors = true;
-							errorsymbols.push('<span class="error-msg-title" title="&#x21AF; This bin has ' + binTypeShort.dataset.itemcount + ' pallets, bin can only hold ' + binTypeShort.dataset.pallets + '">&#x21AF;</span>');
+							errorsymbols.push('<span class="error-msg-title" title="&#x21AF; This bin has ' + binTypeShort.dataset.itemcount + ' pallets, but can only hold ' + binTypeShort.dataset.pallets + '">&#x21AF;</span>');
 							console.log(errorsymbols)
 						}
 						// console.log(errorsymbols)
